@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Five ML Algorithms from Scratch — Rajneesh Babu</title>
+  <meta name="description" content="Linear regression, logistic regression, PCA, a neural network with backpropagation, and a dual-form SVM — written in plain NumPy and verified against scikit-learn."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#0f172a; --bg2:#1e293b; --bg3:#334155;
+      --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+      --text:#f1f5f9; --text2:#cbd5e1; --text3:#94a3b8; --text4:#64748b;
+      --teal:#2dd4bf; --teal2:#14b8a6; --teal3:#0d9488;
+      --clay:#fb923c; --blue:#3b82f6; --purple:#8b5cf6;
+      --green:#10b981; --red:#ef4444;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased;}
+    .container{max-width:960px;margin:0 auto;padding:0 1.5rem;}
+    section{padding:4.5rem 0;}
+    .sec-alt{background:var(--bg2);}
+    code,.mono{font-family:'JetBrains Mono',ui-monospace,monospace;}
+    a{color:var(--teal);text-decoration:none;}
+    a:hover{text-decoration:underline;}
+    a:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-offset:3px;}
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease;}
+    .reveal.visible{opacity:1;transform:none;}
+    @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}}
+
+    /* ---------- hero ---------- */
+    .hero{padding:6rem 0 4.5rem;background:linear-gradient(135deg,#0f172a 0%,#122b2c 55%,#0f172a 100%);position:relative;overflow:hidden;}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 62% 38%,rgba(45,212,191,.08),transparent);pointer-events:none;}
+    .hero .container{position:relative;}
+    .badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);color:var(--teal);font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.5rem;}
+    .badge-dot{width:6px;height:6px;background:var(--teal);border-radius:50%;}
+    h1{font-size:clamp(2.2rem,5.5vw,3.7rem);font-weight:900;letter-spacing:-2px;line-height:1.05;margin-bottom:.75rem;}
+    .h1-main{background:linear-gradient(135deg,#2dd4bf,#38bdf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--teal);}
+    .h1-sub{display:block;color:var(--text2);font-size:clamp(1.2rem,2.6vw,1.9rem);font-weight:700;letter-spacing:-1px;}
+    .hero-desc{font-size:1rem;color:var(--text3);max-width:600px;margin-bottom:1.75rem;line-height:1.8;}
+    .hero-desc strong{color:var(--teal);font-weight:600;}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2.25rem;}
+    .meta-chip{font-size:.72rem;font-weight:600;padding:.3rem .85rem;border-radius:99px;background:rgba(45,212,191,.1);color:var(--teal);border:1px solid rgba(45,212,191,.22);}
+    .meta-chip.alt{background:rgba(148,163,184,.1);color:var(--text3);border-color:var(--border2);}
+    .cta-row{display:flex;flex-wrap:wrap;gap:.75rem;}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;font-size:.85rem;font-weight:600;padding:.7rem 1.3rem;border-radius:10px;border:1px solid var(--border2);color:var(--text);transition:transform .15s ease,border-color .15s ease;}
+    .btn:hover{transform:translateY(-1px);border-color:var(--teal);text-decoration:none;}
+    .btn-primary{background:linear-gradient(135deg,var(--teal2),var(--teal3));border-color:transparent;color:#04211f;}
+
+    /* ---------- stat strip ---------- */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:3rem;}
+    .stat{background:var(--bg);padding:1.4rem 1.2rem;}
+    .stat-num{font-family:'JetBrains Mono',monospace;font-size:1.75rem;font-weight:500;color:var(--teal);line-height:1.1;}
+    .stat-label{font-size:.74rem;color:var(--text4);text-transform:uppercase;letter-spacing:.8px;margin-top:.35rem;}
+
+    /* ---------- section furniture ---------- */
+    .sec-head{margin-bottom:2.25rem;}
+    .eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:.6rem;}
+    h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-1px;line-height:1.2;}
+    .sec-head p{color:var(--text3);margin-top:.7rem;max-width:62ch;}
+
+    /* ---------- algorithm cards ---------- */
+    .algs{display:grid;gap:1rem;}
+    .alg{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:1.4rem 1.5rem;display:grid;grid-template-columns:auto 1fr;gap:0 1.15rem;}
+    .sec-alt .alg{background:#16233b;}
+    .alg-num{font-family:'JetBrains Mono',monospace;font-size:.95rem;color:var(--teal);padding-top:.15rem;}
+    .alg h3{font-size:1.08rem;font-weight:700;margin-bottom:.45rem;}
+    .alg p{color:var(--text3);font-size:.92rem;}
+    .alg .formula{display:block;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text2);background:rgba(148,163,184,.08);border-left:2px solid var(--teal3);padding:.55rem .8rem;border-radius:0 6px 6px 0;margin:.7rem 0;overflow-x:auto;white-space:nowrap;}
+    .alg .verdict{font-size:.8rem;color:var(--text4);margin-top:.55rem;}
+    .alg .verdict b{color:var(--green);font-family:'JetBrains Mono',monospace;font-weight:500;}
+    @media (max-width:560px){.alg{grid-template-columns:1fr;gap:.5rem;}}
+
+    /* ---------- table ---------- */
+    .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:14px;}
+    table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:520px;}
+    th,td{padding:.72rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
+    th{background:rgba(148,163,184,.07);font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--text4);font-weight:700;}
+    tbody tr:last-child td{border-bottom:none;}
+    td.num{font-family:'JetBrains Mono',monospace;color:var(--teal);font-variant-numeric:tabular-nums;}
+    td.ref{font-family:'JetBrains Mono',monospace;color:var(--text3);font-variant-numeric:tabular-nums;}
+    .pass{color:var(--green);font-weight:700;font-size:.74rem;letter-spacing:.5px;}
+
+    /* ---------- figures ---------- */
+    .figs{display:grid;gap:1.75rem;}
+    figure{background:var(--bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+    .sec-alt figure{background:#16233b;}
+    figure img{display:block;width:100%;height:auto;background:#fff;}
+    figcaption{padding:.9rem 1.2rem;font-size:.85rem;color:var(--text3);border-top:1px solid var(--border);}
+    figcaption b{color:var(--text2);font-weight:600;}
+
+    /* ---------- notes / list ---------- */
+    .notes{display:grid;gap:.9rem;}
+    .note{background:var(--bg);border:1px solid var(--border);border-left:2px solid var(--teal3);border-radius:0 12px 12px 0;padding:1.05rem 1.3rem;}
+    .sec-alt .note{background:#16233b;}
+    .note h4{font-size:.95rem;font-weight:700;margin-bottom:.3rem;}
+    .note p{font-size:.88rem;color:var(--text3);}
+    ol.qs{list-style:none;counter-reset:q;display:grid;gap:.6rem;}
+    ol.qs li{counter-increment:q;position:relative;padding-left:2.4rem;color:var(--text2);font-size:.93rem;}
+    ol.qs li::before{content:counter(q,decimal-leading-zero);position:absolute;left:0;top:.05rem;font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--teal);}
+
+    /* ---------- code block ---------- */
+    pre{background:#0b1220;border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.83rem;color:var(--text2);line-height:1.7;}
+    pre .c{color:var(--text4);}
+
+    /* ---------- footer ---------- */
+    footer{border-top:1px solid var(--border);padding:2.5rem 0 3.5rem;color:var(--text4);font-size:.85rem;}
+    .foot-links{display:flex;flex-wrap:wrap;gap:1.25rem;margin-top:.8rem;}
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div class="badge"><span class="badge-dot"></span> M.Tech CDS · IISc Bengaluru</div>
+    <h1><span class="h1-main">Five ML Algorithms</span><span class="h1-sub">written from scratch in NumPy</span></h1>
+    <p class="hero-desc">
+      Linear regression, logistic regression, PCA, a neural network with backpropagation,
+      and a support vector machine solved in the dual. No scikit-learn, no PyTorch, no
+      autograd — <strong>scikit-learn is used only to load the datasets and to check that
+      the answers are right</strong>. All eighteen checks pass.
+    </p>
+    <div class="hero-meta">
+      <span class="meta-chip">NumPy only</span>
+      <span class="meta-chip">Verified vs scikit-learn</span>
+      <span class="meta-chip">Single notebook</span>
+      <span class="meta-chip alt">Python 3.10+</span>
+      <span class="meta-chip alt">Matplotlib</span>
+    </div>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="ml_algorithms_from_scratch.ipynb">Open the notebook</a>
+      <a class="btn" href="https://github.com/rajneeshbabu">GitHub</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-num">5</div><div class="stat-label">algorithms</div></div>
+      <div class="stat"><div class="stat-num">18/18</div><div class="stat-label">checks passed</div></div>
+      <div class="stat"><div class="stat-num">0</div><div class="stat-label">ML frameworks</div></div>
+      <div class="stat"><div class="stat-num">&lt;1 min</div><div class="stat-label">full runtime</div></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="eyebrow">What is implemented</div>
+      <h2>Five algorithms, one notebook</h2>
+      <p>Each section follows the same four steps: the idea, the code, the check against
+         scikit-learn, and a plot. The implementations are deliberately plain — small
+         functions, no class hierarchies.</p>
+    </div>
+
+    <div class="algs">
+      <article class="alg reveal">
+        <div class="alg-num">01</div>
+        <div>
+          <h3>Linear regression &amp; ridge</h3>
+          <p>Minimise the squared error. Setting the derivative to zero gives one equation
+             that can be solved directly — no iteration needed.</p>
+          <span class="formula">(XᵀX + αI) w = Xᵀy</span>
+          <p>Gradient descent is fitted alongside it to show the two land on the same
+             answer, and the ridge penalty is swept to show the coefficients shrink.</p>
+          <div class="verdict">Coefficients match scikit-learn to <b>1.38e-12</b> (ridge: <b>5.33e-13</b>)</div>
+        </div>
+      </article>
+
+      <article class="alg reveal">
+        <div class="alg-num">02</div>
+        <div>
+          <h3>Logistic regression</h3>
+          <p>The same linear score, squashed through a sigmoid and trained on the log-loss.
+             The gradient comes out as “X transpose times the error” — the same shape as
+             linear regression's, which is not a coincidence.</p>
+          <span class="formula">∇J = Xᵀ(p − y) + λw</span>
+          <p>There is no direct solve this time, so it is fitted twice: gradient descent,
+             and Newton's method using the second derivative.</p>
+          <div class="verdict">Newton settles in 8 steps; coefficients match scikit-learn to <b>7.65e-07</b></div>
+        </div>
+      </article>
+
+      <article class="alg reveal">
+        <div class="alg-num">03</div>
+        <div>
+          <h3>Principal component analysis</h3>
+          <p>Find the directions the data varies along most. They are the eigenvectors of
+             the covariance matrix, and each eigenvalue <em>is</em> the variance along that
+             direction.</p>
+          <span class="formula">C w = λw     ·     C = Xᶜᵀ Xᶜ / (n − 1)</span>
+          <p>Implemented both ways — via the SVD (better conditioned, never forms C) and
+             via eigenvectors of the covariance matrix — and the two are checked against
+             each other.</p>
+          <div class="verdict">Components and variance ratios match scikit-learn to <b>0.00e+00</b></div>
+        </div>
+      </article>
+
+      <article class="alg reveal">
+        <div class="alg-num">04</div>
+        <div>
+          <h3>Neural network with backpropagation</h3>
+          <p>One hidden layer, written with four named arrays rather than a general list of
+             layers. With softmax output and cross-entropy loss the messy derivative
+             collapses to just the error over the batch size — which is why those two are
+             always paired.</p>
+          <span class="formula">∂L/∂z_out = (p − y) / n</span>
+          <p>Trained with ordinary mini-batch gradient descent. Since the gradients were
+             derived by hand, a gradient check compares each one to the slope measured by
+             nudging the weight.</p>
+          <div class="verdict">Hand-derived gradients agree with measured slopes to <b>3.86e-09</b></div>
+        </div>
+      </article>
+
+      <article class="alg reveal">
+        <div class="alg-num">05</div>
+        <div>
+          <h3>Support vector machine, dual form</h3>
+          <p>Rewriting the margin problem in terms of Lagrange multipliers gives a form
+             where the data appear only as inner products — so swapping in a kernel makes
+             the boundary curved for free.</p>
+          <span class="formula">max Σαᵢ − ½ ΣΣ αᵢαⱼ yᵢyⱼ K(xᵢ,xⱼ),   0 ≤ αᵢ ≤ C,   Σαᵢyᵢ = 0</span>
+          <p>Because Σαᵢyᵢ must stay at zero, no multiplier can move alone — so SMO updates
+             two at a time, and the update has a closed form.</p>
+          <div class="verdict">Same accuracy and the same 102 support vectors as scikit-learn; boundary correlation <b>1.0000</b></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sec-alt">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Verification</div>
+      <h2>Every result checked against scikit-learn</h2>
+      <p>Closed-form solutions should agree to floating-point noise. Iterative solvers
+         should reach the same optimum by a different route. Anything else is a bug, so
+         the notebook asserts all of it.</p>
+    </div>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr><th>Check</th><th>Mine</th><th>Reference</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Linear regression coefficients</td><td class="num">1.38e-12</td><td class="ref">LinearRegression</td><td class="pass">PASS</td></tr>
+          <tr><td>Ridge coefficients</td><td class="num">5.33e-13</td><td class="ref">Ridge</td><td class="pass">PASS</td></tr>
+          <tr><td>Gradient descent vs direct solve</td><td class="num">1.91e-07</td><td class="ref">same problem, two methods</td><td class="pass">PASS</td></tr>
+          <tr><td>Logistic regression coefficients</td><td class="num">7.65e-07</td><td class="ref">LogisticRegression</td><td class="pass">PASS</td></tr>
+          <tr><td>Logistic regression accuracy</td><td class="num">0.958042</td><td class="ref">0.958042</td><td class="pass">PASS</td></tr>
+          <tr><td>PCA variance ratios &amp; components</td><td class="num">0.00e+00</td><td class="ref">PCA</td><td class="pass">PASS</td></tr>
+          <tr><td>PCA components orthonormal</td><td class="num">2.22e-15</td><td class="ref">‖WWᵀ − I‖</td><td class="pass">PASS</td></tr>
+          <tr><td>SVD route vs eigenvalue route</td><td class="num">1.46e-14</td><td class="ref">internal cross-check</td><td class="pass">PASS</td></tr>
+          <tr><td>Backprop vs measured slopes</td><td class="num">3.86e-09</td><td class="ref">finite differences</td><td class="pass">PASS</td></tr>
+          <tr><td>Neural network on digits</td><td class="num">0.9778</td><td class="ref">0.9733 · MLPClassifier</td><td class="pass">PASS</td></tr>
+          <tr><td>SVM (RBF) accuracy</td><td class="num">0.9580</td><td class="ref">0.9580 · SVC</td><td class="pass">PASS</td></tr>
+          <tr><td>SVM support vectors</td><td class="num">102</td><td class="ref">102 · SVC</td><td class="pass">PASS</td></tr>
+          <tr><td>SVM boundary correlation</td><td class="num">1.0000</td><td class="ref">vs SVC decision function</td><td class="pass">PASS</td></tr>
+          <tr><td>SVM constraint Σαᵢyᵢ = 0</td><td class="num">7.01e-08</td><td class="ref">relative to Σα</td><td class="pass">PASS</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Output</div>
+      <h2>What the plots show</h2>
+      <p>Every figure is generated by the notebook and saved with it, so the page and the
+         notebook can never drift apart.</p>
+    </div>
+
+    <div class="figs">
+      <figure class="reveal">
+        <img src="assets/01-linear-regression.png" alt="Three plots: gradient descent converging to the direct solve, predicted against actual values, and ridge coefficient paths."/>
+        <figcaption><b>Linear regression.</b> Gradient descent converging onto the answer
+          the direct solve already found; held-out predictions against truth; and every
+          coefficient shrinking toward zero as the ridge penalty grows.</figcaption>
+      </figure>
+
+      <figure class="reveal">
+        <img src="assets/02-logistic-regression.png" alt="Two plots: convergence of gradient descent versus Newton's method, and a fitted decision boundary in two dimensions."/>
+        <figcaption><b>Logistic regression.</b> Newton's method settles in eight
+          steps where gradient descent needs thousands — the cost is one matrix solve per
+          step. On the right, the fitted boundary on a two-dimensional slice.</figcaption>
+      </figure>
+
+      <figure class="reveal">
+        <img src="assets/03-pca.png" alt="Cumulative variance curve, digits projected onto two components, and one digit rebuilt from 5, 20 and 40 components."/>
+        <figcaption><b>PCA.</b> Twenty of the sixty-four directions carry 89% of the
+          variance. Below, the same digit rebuilt from 5, 20 and 40 components — the
+          high-frequency detail is what goes first.</figcaption>
+      </figure>
+
+      <figure class="reveal">
+        <img src="assets/04-neural-network.png" alt="Gradient check error against step size, the training loss curve, and a curved decision boundary on the moons dataset."/>
+        <figcaption><b>Neural network.</b> The left panel is the gradient check across step
+          sizes: too large is inaccurate, too small is swamped by rounding. It is also the
+          answer to “how do you know your backprop is right?”</figcaption>
+      </figure>
+
+      <figure class="reveal">
+        <img src="assets/05-svm.png" alt="A straight SVM boundary, an RBF boundary bending around the moons, and the effect of C on support vector count."/>
+        <figcaption><b>SVM.</b> The same solver with two kernels — a straight boundary, then
+          a curved one at no extra cost. Circled points are the support vectors; the right
+          panel shows a smaller C widening the margin and recruiting more of them.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="sec-alt">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Design choices</div>
+      <h2>Kept simple on purpose</h2>
+      <p>The point of writing these by hand is being able to explain them, so readability
+         was chosen over generality everywhere it mattered.</p>
+    </div>
+
+    <div class="notes">
+      <div class="note reveal">
+        <h4>Plain functions, not classes</h4>
+        <p><code>fit_linear(X, y, alpha)</code> and <code>predict_linear(X, w)</code> —
+           no base classes, no inheritance, no framework-shaped abstractions.</p>
+      </div>
+      <div class="note reveal">
+        <h4>Four named arrays instead of a layer loop</h4>
+        <p>The network keeps <code>W1, b1, W2, b2</code> explicitly. One hidden layer is
+           enough to show what backpropagation does, and the backward pass is six lines
+           you can point at.</p>
+      </div>
+      <div class="note reveal">
+        <h4>Plain gradient descent, no Adam</h4>
+        <p>Mini-batch SGD scores 97.78% on digits against scikit-learn's 97.33%. The
+           extra optimiser machinery would not have bought anything here.</p>
+      </div>
+      <div class="note reveal">
+        <h4>Simplified SMO, and the cost of it</h4>
+        <p>The second multiplier is picked at random rather than by a heuristic — shorter
+           to read, same boundary. The trade-off is real and visible: thousands more
+           updates leave the constraint Σαᵢyᵢ = 0 drifting by 4.9e-06 in absolute terms,
+           so the notebook checks it relative to the size of the multipliers and says
+           why in a comment.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Run it</div>
+      <h2>Quick start</h2>
+    </div>
+    <pre class="reveal"><span class="c"># clone and install</span>
+git clone https://github.com/rajneeshbabu/ml-from-scratch.git
+cd ml-from-scratch
+pip install -r requirements.txt
+
+<span class="c"># open it</span>
+jupyter notebook ml_algorithms_from_scratch.ipynb</pre>
+
+    <div class="sec-head reveal" style="margin-top:3.25rem;">
+      <div class="eyebrow">The point</div>
+      <h2>Questions this is meant to survive</h2>
+    </div>
+    <ol class="qs reveal">
+      <li>Why linear regression has a direct solution and logistic regression does not.</li>
+      <li>What ridge actually does to the coefficients, and why the intercept is left out of it.</li>
+      <li>Why Newton's method needs so few steps, and what it costs per step.</li>
+      <li>Why the eigenvalue of the covariance matrix <em>is</em> the variance along that direction.</li>
+      <li>Why softmax and cross-entropy are always used together.</li>
+      <li>Why a gradient check can fail even when the gradient is correct.</li>
+      <li>Why the SVM dual lets you swap in a kernel but the primal does not.</li>
+      <li>Why SMO has to update two multipliers at once instead of one.</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div>Rajneesh Babu · M.Tech Computational and Data Sciences, Indian Institute of Science, Bengaluru</div>
+    <div class="foot-links">
+      <a href="ml_algorithms_from_scratch.ipynb">Notebook</a>
+      <a href="README.md">README</a>
+      <a href="https://github.com/rajneeshbabu">GitHub</a>
+      <a href="https://rajneeshbabu.github.io">Portfolio</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // fade sections in as they arrive; if anything goes wrong, show everything
+  (function () {
+    var items = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      items.forEach(function (el) { el.classList.add('visible'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    items.forEach(function (el) { io.observe(el); });
+    // anything already on screen at load shows immediately
+    setTimeout(function () {
+      items.forEach(function (el) {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+      });
+    }, 60);
+  })();
+</script>
+<noscript><style>.reveal{opacity:1;transform:none;}</style></noscript>
+
+</body>
+</html>
