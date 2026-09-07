@@ -1,5 +1,13 @@
 # Five ML Algorithms from Scratch
 
+[![Project Page](https://img.shields.io/badge/Project%20Page-GitHub%20Pages-222?logo=github)](https://rajneeshbabu.github.io/ml-from-scratch/)
+[![Notebook](https://img.shields.io/badge/Notebook-Jupyter-F37626?logo=jupyter&logoColor=white)](ml_algorithms_from_scratch.ipynb)
+[![NumPy](https://img.shields.io/badge/Built%20with-NumPy%20only-013243?logo=numpy&logoColor=white)](https://numpy.org)
+[![Checks](https://img.shields.io/badge/checks-18%2F18%20passing-2dd4bf)](ml_algorithms_from_scratch.ipynb)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+🌐 **[View the project page →](https://rajneeshbabu.github.io/ml-from-scratch/)**
+
 **[`ml_algorithms_from_scratch.ipynb`](ml_algorithms_from_scratch.ipynb)** — linear
 regression, logistic regression, PCA, a one-hidden-layer neural network with
 backpropagation, and a dual-form SVM solved by SMO. Written with plain NumPy: no
@@ -52,11 +60,11 @@ framework-style abstractions.
 
 ## Project page
 
-`index.html` is a GitHub Pages project page for this repo. Enable Pages on the repository
-(Settings → Pages → deploy from the `main` branch, root folder) and it renders at
-`https://<username>.github.io/ml-from-scratch/`. It pulls its figures from `assets/`,
-which are exported straight out of the notebook, so the page and the notebook cannot
-drift apart.
+**[rajneeshbabu.github.io/ml-from-scratch](https://rajneeshbabu.github.io/ml-from-scratch/)**
+
+`index.html` is the source of that page, served by GitHub Pages from the `main` branch.
+It pulls its figures from `assets/`, which are exported straight out of the notebook, so
+the page and the code cannot drift apart.
 
 ## Running it
 
